@@ -1,0 +1,1 @@
+# destroy-me-genai-artifacts
