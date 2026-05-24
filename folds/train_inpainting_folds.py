@@ -132,7 +132,7 @@ def evaluate_loss(unet, vae, text_encoder, noise_scheduler, dataloader, accelera
             num_batches += 1
     return total_loss / num_batches
 
-# --- 3. Main Metric & Gallery Function (UPDATED) ---
+# --- 3. Main Metric & Gallery Function ---
 def run_metrics_and_gallery(vae, text_encoder, tokenizer, unet, args, accelerator, val_dataloader, fixed_visual_samples, mask_bank):
     print("--- Running Full Validation Suite ---")
     
@@ -151,7 +151,7 @@ def run_metrics_and_gallery(vae, text_encoder, tokenizer, unet, args, accelerato
     P_CLEAN = "Histopathological image of lung tissue, hematoxylin and eosin staining, with no fold artifact visible."
     P_ARTIFACT = "Histopathological image of lung tissue, hematoxylin and eosin staining, with a fold artifact visible."
 
-    # --- PART A: Visual Gallery (Now with Masks!) ---
+    # --- PART A: Visual Gallery ---
     gallery_images = []
     
     for i, sample in enumerate(fixed_visual_samples):
@@ -168,10 +168,9 @@ def run_metrics_and_gallery(vae, text_encoder, tokenizer, unet, args, accelerato
             prompt = P_ARTIFACT 
             case_name = f"Sample {i} (Add Artifact)"
             
-        # 2. Case: Artifact Image -> Restore/Regularize (Check if it can draw prompt)
-        # Note: If we use P_ARTIFACT here, it should reconstruct the fold. 
-        # If we use P_CLEAN, it tries to remove it (which we agreed is not the goal, but interesting to see).
-        # Let's stick to P_ARTIFACT (Restoration) to see if it learns the texture.
+        # 2. Case: Artifact Image -> Restore/Regularize 
+        # If we use P_ARTIFACT here, it should reconstruct the fold. 
+        # If we use P_CLEAN, it tries to remove it.
         else:
             mask_input = original_mask
             prompt = P_ARTIFACT 
@@ -235,7 +234,6 @@ def run_metrics_and_gallery(vae, text_encoder, tokenizer, unet, args, accelerato
                 fid_gen.update((fake_artifacts[idx].clamp(0,1)*255).to(torch.uint8).unsqueeze(0), real=False)
 
         # --- TASK 2: REGULARIZATION (Clean + Borrowed Mask + Prompt"No Fold" -> Clean) ---
-        # We reuse the clean images but ask for NO FOLD. The model should ignore the mask shape and fill with tissue.
         if len(clean_indices) > 0:
             # Re-use borrowed masks to see if model ignores the specific fold shape
             with torch.autocast("cuda"):
