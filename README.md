@@ -48,13 +48,31 @@ Tools for simulating optical and mechanical errors during the slide scanning pro
 * **`scanning_artefacts.py`**: Core engine that defines `BlurConfig` and `StitchConfig` to simulate optical defocus (feathered gaussian blur patches) and mechanical stitching errors (pixel shifting across axes).
 * **`generate_scanning_artifacts.py`**: Wraps the scanning artifact engine, safely applying randomized horizontal/vertical shifts and blurred strips while avoiding the edges of the image tiles.
 
+## Environment Setup
+This project uses a standard Python virtual environment. To set it up and install the necessary dependencies, run the following commands in your terminal:
+
+**1. Create the virtual environment:**
+```bash
+python3 -m venv venv
+```
+**2. Activate environment:**
+
+```bash
+source venv/bin/activate
+```
+
+**3. Install dependencies:**
+
+```bash
+pip install -r requirements.txt
+```
 
 ## License
 
 See [LICENSE.md](LICENSE.md)
 
 
-### Model weights
+## Model weights
 Model weights for folds and precitipates generation along with artifacts masks (stored in parquet files) are accesible for download under following [link](https://dataverse.harvard.edu/previewurl.xhtml?token=438b2fa7-3999-4739-87f1-c3a31f4de838)
 
 ## External datasets
