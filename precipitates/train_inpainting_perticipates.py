@@ -41,7 +41,6 @@ from torchmetrics.multimodal.clip_score import CLIPScore
 
 class HybridPrecipitateDataset(IterableDataset):
     """
-    Script 2 Original Architecture:
     Streams data and handles mixing Real/Synthetic/Clean sources.
     """
 
@@ -74,7 +73,7 @@ class HybridPrecipitateDataset(IterableDataset):
         self.real_cache = self._preload_real_data()
 
     def _preload_real_data(self):
-        # FIX: Handle case where dataset_path is None (used by wrapper class)
+        # Handle case where dataset_path is None (used by wrapper class)
         if self.dataset_path is None:
             return []
 
@@ -205,7 +204,7 @@ class HybridPrecipitateDataset(IterableDataset):
 
 class ValidationMetricDataset(Dataset):
     """
-    New Helper Class: Allows us to turn the list of cached validation data
+    Helper Class: Allows us to turn the list of cached validation data
     into a standard Map-Style dataset required for the metric evaluation loop.
     """
 
@@ -213,7 +212,6 @@ class ValidationMetricDataset(Dataset):
         self.data = data_list
         self.tokenizer = tokenizer
         self.size = size
-        # Re-use logic from main dataset
         self.processor = HybridPrecipitateDataset(None, None, tokenizer, size)
 
     def __len__(self):
@@ -230,7 +228,6 @@ class ValidationMetricDataset(Dataset):
 
 
 def get_mask_bbox(mask_tensor):
-    """From Script 1: Used for LPIPS cropping"""
     indices = torch.nonzero(mask_tensor > 0)
     if len(indices) == 0:
         return 0, 0, mask_tensor.shape[1], mask_tensor.shape[2]
@@ -248,7 +245,6 @@ def get_mask_bbox(mask_tensor):
 
 
 def apply_noise_offset(latents, noise, strength=0.1):
-    """From Script 2: Preserved for dark/bright artifact generation"""
     if random.random() < 0.25:
         offset = torch.randn(
             latents.shape[0], latents.shape[1], 1, 1, device=latents.device
@@ -259,7 +255,6 @@ def apply_noise_offset(latents, noise, strength=0.1):
 
 def prepare_mask_dilated(pil_mask, size=(512, 512)):
     """
-    ADAPTED: Uses Script 2's Dilation logic instead of Script 1's Blur.
     Ensures metrics use the same mask style as training.
     """
     tensor = transforms.Compose(
@@ -349,7 +344,7 @@ def calculate_wasserstein_dist(gen_tensor, real_tensor):
 
 
 # ============================================================
-# 3. METRICS AND GALLERY (MERGED)
+# 3. METRICS AND GALLERY
 # ============================================================
 
 
