@@ -1,5 +1,6 @@
 import os
 import io
+import argparse
 import logging
 import pandas as pd
 import numpy as np
@@ -190,10 +191,24 @@ def create_dataset_parquet(source_dir: str, output_path: str):
     logging.info("--- Parquet file created successfully! ---")
 
 
-# --- 3. Execution ---
-if __name__ == "__main__":
-    # Point this to the folder containing 'tiles' and 'masks' subfolders
-    SOURCE_DIRECTORY = "../../dane/folds-384-mpp09-ov075-0_05_0_95/exported_good_data"
-    OUTPUT_PARQUET = "lung_folds_dataset_simple_desc_MPP_09.parquet"
 
-    create_dataset_parquet(SOURCE_DIRECTORY, OUTPUT_PARQUET)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Create a Parquet dataset for fold artifacts.")
+    
+    parser.add_argument(
+        "--source_dir", 
+        type=str, 
+        required=True, 
+        help="Path to the folder containing 'tiles' and 'masks' subfolders."
+    )
+    
+    parser.add_argument(
+        "--output_path", 
+        type=str, 
+        default="lung_folds_dataset_simple_desc_MPP_09.parquet", 
+        help="Path/filename for the output Parquet file."
+    )
+    
+    args = parser.parse_args()
+
+    create_dataset_parquet(args.source_dir, args.output_path)
