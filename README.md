@@ -71,6 +71,32 @@ pip install -r requirements.txt
 
 See [LICENSE.md](LICENSE.md)
 
+## Evaluation
+
+To evaluate the fidelity of the generated artifacts, use the `judge_results.py` and `judge_results_PLIP.py` scripts located in the `evaluation/` directory.
+
+### Standard Metrics (FID, KID, SSIM, Color Distance)
+Run `judge_results.py` by pointing it to real reference dataset and the folder containing your generated artifacts. 
+
+**Example usage:**
+```bash
+python evaluation/judge_results.py \
+  --real_source path/to/real_training_dataset.parquet \
+  --gen_folder path/to/generated_artifacts_folder \
+  --artifact_type [marker, dust, folds, precipitates] \
+  --clean_source path/to/clean_reference_images/ \
+  --calc_ssim \
+  --output_file metrics_results.txt
+```
+### PLIP Score
+To evaluate how well the generated artifacts align with pathological text descriptions, use the `judge_results_PLIP.py` script.
+
+```bash
+python evaluation/judge_results_PLIP.py \
+  --gen_folder path/to/generated_artifacts_folder \
+  --artifact_type [folds, precipitates] \
+  --output_file plip_results.txt
+```
 
 ## Model weights
 Model weights for folds and precitipates generation along with artifacts masks (stored in parquet files) are accesible for download under following [link](https://dataverse.harvard.edu/previewurl.xhtml?token=438b2fa7-3999-4739-87f1-c3a31f4de838)
