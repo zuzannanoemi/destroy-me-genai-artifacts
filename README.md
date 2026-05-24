@@ -17,7 +17,7 @@ Scripts dedicated to preparing, analyzing, and patching dataset images.
 Scripts to measure the fidelity and semantic grounding of the generated artifacts.
 * **`judge_results.py`**: Computes standard image quality and generative metrics such as Frechet Inception Distance (FID), Kernel Inception Distance (KID), Masked SSIM, and Wasserstein color distance.
 * **`judge_results_PLIP.py`**: Calculates the PLIP (Pathology Language-Image Pretraining) Semantic Grounding score using PLIP to evaluate text-to-image alignment.
-* **`evaluate_fidelity_with_CI.sh` / `evaluate_fidelity_PLIP.sh`**: Shell scripts to batch-execute the evaluation routines across different artifact datasets (marker, dust, folds, precipitates).
+
 ### `helpers/`
 * **`generate_manifests.py`**: A utility that creates deterministic JSON manifests, specifying exactly which images should receive which artifacts.
   
@@ -71,6 +71,89 @@ pip install -r requirements.txt
 
 See [LICENSE.md](LICENSE.md)
 
+## Usage Guide
+
+### 1. Generating Manifests
+Before generating artifacts, creation of JSON manifests is needed. These manifests deterministically allocate which clean images will receive which artifacts, ensuring there is no uncontrolled overlap (unless desired).
+
+Use the `generate_manifests.py` script to create these files. You can specify the exact fraction of your dataset to allocate to each artifact using the `--artifacts` flag.
+
+```
+python helpers/generate_manifests.py \
+  --input_dir "path/to/clean_images" \
+  --output_dir "path/to/save_manifests" \
+  --artifacts "dust:0.1 marker:0.1 fold:0.2 prec:0.2 blur:0.1 stitch:0.1"
+```
+### 2. Generating Artifacts
+
+**generate_folds**
+```
+python folds/generate_folds.py \
+  --checkpoint "path/to/folds_model_checkpoint" \
+  --input_source "path/to/clean_images" \
+  --output_dir "path/to/output_folds" \
+  --parquet_for_masks "path/to/real_fold_masks.parquet" \
+  --json_filter "path/to/manifests/manifest_stress_fold_02.json"
+```
+**generate_precipitate**
+```
+python precipitates/generate_precipitates.py \
+  --checkpoint "path/to/prec_model_checkpoint" \
+  --input_source "path/to/clean_images" \
+  --output_dir "path/to/output_precipitates" \
+  --parquet_for_masks "path/to/real_prec_masks.parquet" \
+  --json_filter "path/to/manifests/manifest_stress_prec_02.json"
+```
+
+**Generate Pen Marker**
+```
+python marker/generate_marker.py \
+  --input_source "path/to/clean_images" \
+  --output_dir "path/to/output_marker" \
+  --json_filter "path/to/manifests/manifest_stress_marker_01.json"
+```
+**Generate Dust**
+```
+python dust/generate_dust.py \
+  --input_source "path/to/clean_images" \
+  --output_dir "path/to/output_dust" \
+  --json_filter "path/to/manifests/manifest_stress_dust_01.json"
+```
+
+**Generate Scanning Artifacts (Optical Blur)**
+```
+python scanning_artifacts/generate_scanning_artifacts.py \
+  --input_source "path/to/clean_images" \
+  --output_dir "path/to/output_blur" \
+  --artifact_type "blur" \
+  --json_filter "path/to/manifests/manifest_stress_blur_01.json"
+```
+
+**Generate Scanning Artifacts (Mechanical Stitch)**
+```
+python scanning_artifacts/generate_scanning_artifacts.py \
+  --input_source "path/to/clean_images" \
+  --output_dir "path/to/output_stitch" \
+  --artifact_type "stitch" \
+  --json_filter "path/to/manifests/manifest_stress_stitch_01.json"
+```
+## Training models
+
+**Precipitates**
+```
+accelerate launch precipitates/train_inpainting_perticipates.py \
+  --data "path/to/lung_precipitate_training_dataset.parquet" \
+  --pretrained_model "stable-diffusion-v1-5/stable-diffusion-inpainting" \
+  --output_dir "trained_precipitates_model" \
+  --batch_size 2 \
+  --max_steps 15000
+```
+
+**Folds**
+Folds training script has its configuration and dataset path hardcoded within the main function of the file.
+```
+accelerate launch folds/train_inpainting_folds.py
+```
 ## Evaluation
 
 To evaluate the fidelity of the generated artifacts, use the `judge_results.py` and `judge_results_PLIP.py` scripts located in the `evaluation/` directory.
