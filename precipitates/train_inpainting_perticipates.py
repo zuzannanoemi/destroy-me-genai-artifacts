@@ -124,14 +124,14 @@ class HybridPrecipitateDataset(IterableDataset):
         pixel_values = self.img_tf(image)
         mask_tensor = self.mask_tf(raw_mask)
 
-        # --- ARCHITECTURAL CHANGE PRESERVED: MASK DILATION ---
+        # --- MASK DILATION ---
         # Dilate mask to force edge blending for precipitates
         if source_str in ["real", "synthetic"]:
             mask_tensor = F.max_pool2d(
                 mask_tensor, kernel_size=21, stride=1, padding=10
             )
 
-        # --- ARCHITECTURAL CHANGE PRESERVED: HOLE FILLING ---
+        # --- HOLE FILLING ---
         # For clean data, create random box masks
         if source_str == "clean":
             mask_tensor.fill_(0.0)
@@ -143,7 +143,7 @@ class HybridPrecipitateDataset(IterableDataset):
 
         mask = (mask_tensor > 0.5).float()
 
-        # --- ARCHITECTURAL CHANGE PRESERVED: PROMPT ENGINEERING ---
+        # --- PROMPT ENGINEERING ---
         base_prompt = item.get("text", "")
         transparency_keywords = (
             "semi-transparent overlay, see-through texture, blending with tissue"
