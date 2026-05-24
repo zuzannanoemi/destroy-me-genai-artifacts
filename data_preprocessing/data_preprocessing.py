@@ -25,7 +25,6 @@ ARTIFACTS_NAMES = [
     "waves",
 ]
 
-# Configure logging to display information and errors
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -119,8 +118,8 @@ def analyse_number_of_tiles_per_artifact(
     data_path: str, prefixes: List[str] = ARTIFACTS_NAMES
 ) -> Dict[str, int]:
     """
-    Iteruje po nazwach plików w katalogu i wyodrębnia pierwszy człon names
-    na podstawie listy dopuszczalnych prefixów.
+    Iterates through the file names in the directory
+    and extracts the first part of the name based on a list of allowed prefixes.
 
     Args:
         data_path: Path to files directory
@@ -129,47 +128,36 @@ def analyse_number_of_tiles_per_artifact(
     Returns:
         Dictionary with key: artifact name, vale: number of occurances.
     """
-    # Sprawdzamy, czy ścieżka jest poprawnym katalogiem
     if not os.path.isdir(data_path):
         print(f"Error: Path '{data_path}' is not directory or does not exsist.")
         return {}
 
     found_prefixes: List[str] = []
 
-    # Sortujemy prefixy malejąco po długości.
-    # To jest KLUCZOWE, aby prefixy zawierające "_" (np. "knife_marks") były sprawdzane
-    # PRZED krótszymi, ale pasującymi początkami (np. "knife").
     sorted_prefixes = sorted(prefixes, key=len, reverse=True)
 
     try:
         for file_name_with_ext in os.listdir(data_path):
-            # Upewniamy się, że to plik i wyodrębniamy samą nazwę bez ścieżki
             full_path = os.path.join(data_path, file_name_with_ext)
 
             if os.path.isfile(full_path):
-                # Usuwamy rozszerzenie, aby ułatwić dopasowanie prefixu
                 file_name = os.path.splitext(file_name_with_ext)[0]
 
                 prefix_found = None
 
                 for prefix in sorted_prefixes:
-                    # Sprawdzamy, czy nazwa pliku zaczyna się od prefixu ORAZ
-                    # czy po prefixie następuje podkreślenie (lub to koniec names pliku)
+
                     if file_name.startswith(prefix):
                         end_index = len(prefix)
 
-                        # Sprawdzamy, czy to jest dokładnie dopasowanie do prefixu
                         if end_index == len(file_name) or file_name[end_index] == "_":
                             prefix_found = prefix
-                            break  # Znaleziono najdłuższy możliwy prefix, przerywamy pętlę
+                            break  
 
                 if prefix_found:
                     found_prefixes.append(prefix_found)
-                # Opcjonalnie: Można dodać obsługę plików, które nie pasują do żadnego prefixu
-                # else:
-                #     print(f"Ostrzeżenie: Plik '{file_name_with_ext}' nie pasuje do żadnego z dopuszczalnych prefixów.")
 
-        # Zliczanie wystąpień unikalnych prefixów
+
         cnt = Counter(found_prefixes)
         return dict(cnt)
 
@@ -190,23 +178,18 @@ def visualize_artifacts_tiles_occurences(
         print("No data for visualization")
         return
 
-    # Przygotowanie danych do wykresu
     names = list(artefacts.keys())
     numbers = list(artefacts.values())
 
-    # Tworzenie wykresu słupkowego
     plt.figure(figsize=(10, 6))
     plt.bar(names, numbers, color="darkgreen")
 
-    # Dodanie etykiet i tytułu
     plt.xlabel("Artifacts")
     plt.ylabel("Tiles")
     plt.title(title)
 
-    # Obrót etykiet na osi X dla lepszej czytelności
     plt.xticks(rotation=45, ha="right")
 
-    # Dodanie wartości nad słupkami
     for i, liczba in enumerate(numbers):
         plt.text(i, liczba, str(liczba), ha="center", va="bottom")
 

@@ -59,12 +59,10 @@ def main():
     PROMPT_TEXT = f"Histopathological image of lung tissue, hematoxylin and eosin staining, with {args.artifact_type} artifact."
 
     print("\nLoading PLIP Model and Processor for Text-Image Semantic Grounding...")
-    # Ładujemy model i procesor natywnie z HuggingFace
     plip_model = CLIPModel.from_pretrained("vinid/plip").to(args.device)
     plip_processor = CLIPProcessor.from_pretrained("vinid/plip")
     plip_model.eval()
 
-    # Znajdujemy wszystkie wygenerowane obrazy
     files = [f for f in os.listdir(args.gen_folder) if f.lower().endswith((".png", ".jpg"))]
     
     print(f"\nProcessing {len(files)} Generated Artifacts ({args.artifact_type.upper()})...")
@@ -85,18 +83,15 @@ def main():
             )
             inputs = {k: v.to(args.device) for k, v in inputs.items()}
 
-            # Przejście przez model
             outputs = plip_model(**inputs)
             
             img_embeds = outputs.image_embeds
             txt_embeds = outputs.text_embeds
 
-            # Normalizacja wektorów i obliczenie podobieństwa cosinusowego
             img_embeds = img_embeds / img_embeds.norm(p=2, dim=-1, keepdim=True)
             txt_embeds = txt_embeds / txt_embeds.norm(p=2, dim=-1, keepdim=True)
             cos_sim = torch.matmul(img_embeds, txt_embeds.t()).item()
             
-            # torchmetrics CLIPScore stosuje mnożnik x100 i ucina wartości poniżej 0
             score = max(100.0 * cos_sim, 0.0)
             all_plip_scores.append(score)
 

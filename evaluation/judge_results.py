@@ -108,16 +108,14 @@ def calculate_frechet_distance(mu1, sigma1, mu2, sigma2):
 
 def bootstrap_fid(real_feats, fake_feats, n_bootstraps=50):
     """Calculates FID Std and 95% CI by bootstrapping on extracted features."""
-    print("    -> Obliczanie macierzy kowariancji dla obrazów referencyjnych...")
     mu_real = np.mean(real_feats, axis=0)
     sigma_real = np.cov(real_feats, rowvar=False)
     
     n_fake = len(fake_feats)
     bootstrap_scores = []
     
-    print(f"    -> Bootstrapping FID ({n_bootstraps} iteracji). To potrwa kilka minut na CPU...")
+    print(f"    -> Bootstrapping FID ({n_bootstraps} iterations).")
     
-    # Dodany tqdm, żeby pokazywać czas do końca i pasek postępu!
     for _ in tqdm(range(n_bootstraps), desc="FID Bootstrap", leave=False):
         idx = np.random.choice(n_fake, size=n_fake, replace=True)
         sampled_fake = fake_feats[idx]
@@ -366,7 +364,6 @@ def main():
 
     fid = FrechetInceptionDistance(feature=2048).to(args.device)
 
-    # Współdzielimy Inception między FID i KID, żeby zaoszczędzić VRAM
     shared_inception = fid.inception
     kid = KernelInceptionDistance(feature=shared_inception, subset_size=50).to(args.device)
     kid_base = KernelInceptionDistance(feature=shared_inception, subset_size=50).to(args.device)
@@ -462,17 +459,13 @@ def main():
 
     # FID Bootstrap Execution
     try:
-        # 1. Najpierw liczymy Prawdziwy, dokładny FID całego zbioru (to zwróci ~77.22)
         true_fid = fid.compute().item()
         
-        # 2. Pobieramy cechy z bufora
         real_feats_np = torch.cat([f.cpu() for f in kid.real_features], dim=0).numpy()
         fake_feats_np = torch.cat([f.cpu() for f in kid.fake_features], dim=0).numpy()
         
-        # 3. Odpalamy bootstrap, ale bierzemy z niego TYLKO odchylenie standardowe (f_s) i granice
         boot_m, f_s, boot_ci = bootstrap_fid(real_feats_np, fake_feats_np, n_bootstraps=50)
         
-        # 4. Aplikujemy "szerokość" przedziału ufności do prawdziwego wyniku
         ci_lower = true_fid - (boot_m - boot_ci[0])
         ci_upper = true_fid + (boot_ci[1] - boot_m)
         
