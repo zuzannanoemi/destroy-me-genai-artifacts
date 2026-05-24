@@ -32,7 +32,7 @@ SELECTION_SEED = 42  # Global seed modifier for this specific augmentation
 CROP_MARGIN = 20     # Artifacts entirely within this border will be rejected
 
 def get_deterministic_blurs(size: Tuple[int, int]) -> List[BlurConfig]:
-    """Generates random partial strip artifacts tailored for 300x300 @ 1mmp."""
+    """Generates random partial strip artifacts ."""
     blurs = []
     w, h = size
 
@@ -73,7 +73,7 @@ def get_deterministic_blurs(size: Tuple[int, int]) -> List[BlurConfig]:
             entirely_bottom = (by >= h - CROP_MARGIN)
 
             if not (entirely_left or entirely_right or entirely_top or entirely_bottom):
-                # INTENSITY: Kept low for 1mmp resolution
+                # INTENSITY: Kept low for 0.9/1mmp resolution
                 b_int = random.choice([3, 5, 7])
 
                 # FEATHERING: Soft edges for realistic optical focus loss

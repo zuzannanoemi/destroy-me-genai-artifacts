@@ -7,7 +7,7 @@ from tqdm import tqdm
 # --------------------------------------------------
 # CONFIG
 # --------------------------------------------------
-REAL_PRECIPITATE_PARQUET = "../../dane/lung_precipitate_real_09_MPP.parquet"
+REAL_PRECIPITATE_PARQUET = "lung_precipitate_real_09_MPP.parquet"
 SYNTH_PRECIPITATE_PARQUET = "lung_synthetic_precipitates_MPP_09.parquet"
 CLEAN_ONLY_PARQUET = "lung_clean_only_subset.parquet"
 

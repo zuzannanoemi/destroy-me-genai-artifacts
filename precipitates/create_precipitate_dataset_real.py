@@ -1,4 +1,5 @@
 import io
+import argparse
 import logging
 import os
 import random
@@ -8,6 +9,8 @@ import pandas as pd
 from PIL import Image
 from tqdm import tqdm
 import colorsys
+
+# python precipitates/create_precipitate_dataset_real.py --source_dir "path/to/exported_good_data" --output_path "my_real_precipitates.parquet"
 
 # ---------------------------------
 # Logging
@@ -152,13 +155,24 @@ def create_precipitate_parquet(source_dir: str, output_path: str):
     logging.info(df["split"].value_counts())
 
 
-# ---------------------------------
-# Entry point
-# ---------------------------------
-if __name__ == "__main__":
-    SOURCE_DIRECTORY = (
-        "../../../dane/precipitates-756_filtered_0_05_0_95/exported_good_data"
-    )
-    OUTPUT_PARQUET = "lung_precipitate_real.parquet"
 
-    create_precipitate_parquet(SOURCE_DIRECTORY, OUTPUT_PARQUET)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Extract real precipitates into a Parquet dataset.")
+    
+    parser.add_argument(
+        "--source_dir", 
+        type=str, 
+        required=True, 
+        help="Path to the directory containing 'tiles' and 'masks' subfolders."
+    )
+    
+    parser.add_argument(
+        "--output_path", 
+        type=str, 
+        default="lung_precipitate_real.parquet", 
+        help="Path for the output Parquet file."
+    )
+    
+    args = parser.parse_args()
+
+    create_precipitate_parquet(args.source_dir, args.output_path)
